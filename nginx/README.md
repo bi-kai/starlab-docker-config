@@ -21,3 +21,22 @@ nginx镜像定制化分为四个阶段：
 2.	使用定制0。
 3.	日志目录、配置文件、server目录、www目录：通过挂载实现灵活配置。
 4.	开机启动：重启后容器仍然存在，通过启动参数restart，确保容器被拉起。
+
+```shell
+mkdir -p /starlab/gitRepos
+git clone git@github.com:bi-kai/starlab-docker-images.git
+mkdir -p /starlab/docker
+cp -r /starlab/gitRepos/starlab-docker-images/nginx /starlab/docker
+cd /starlab/docker/nginx
+
+docker run -d --name nginx_service -p 81:80 \
+-m 512m --memory-swap 1G --restart=always \
+-v /starlab/docker/nginx/logs:/var/log/nginx \
+-v /starlab/docker/nginx/conf/nginx.conf:/etc/nginx/nginx.conf \
+-v /starlab/docker/nginx/conf/vhosts:/etc/nginx/conf.d \
+-v /starlab/docker/nginx/www:/usr/share/nginx/html/:ro \
+nginx
+
+```
+
+-EOF-
