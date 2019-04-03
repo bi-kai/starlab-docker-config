@@ -8,6 +8,6 @@ Docker images designed for StarLab, building images from manually to automatical
 每个目录是一个定制化镜像，镜像保持最大化的通用性，能用公共能力实现的，就会避免定制化。
 
 ### nginx
-nginx定制化镜像，内附readme。
+nginx定制化镜像，详细使用说明见其readme。
 
 -EOF-

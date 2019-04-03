@@ -39,4 +39,6 @@ nginx
 
 ```
 
+上述覆盖中，本地服务器配置目录为vhosts，镜像中服务器配置目录为conf.d，通过映射仍保持conf.d文件夹，在本地nginx.conf中引用的仍然是conf.d文件夹。
+
 -EOF-
