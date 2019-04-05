@@ -29,6 +29,8 @@ mkdir -p /starlab/docker
 cp -r /starlab/gitRepos/starlab-docker-images/nginx /starlab/docker
 cd /starlab/docker/nginx
 
+docker pull nginx
+
 docker run -d --name nginx_service -p 81:80 \
 -m 512m --memory-swap 1G --restart=always \
 -v /starlab/docker/nginx/logs:/var/log/nginx \
