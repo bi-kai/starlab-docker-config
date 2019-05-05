@@ -1,0 +1,16 @@
+version: '3'
+services:
+  php1:
+    image: php:fpm
+    container_name: php-fpm_service1
+    expose:
+      - "9000"
+    networks:
+      - "starlab-net1"
+    volumes:
+      - "/starlab/docker/php:/app"
+
+networks:
+  starlab-net1:
+    driver: bridge
+    
