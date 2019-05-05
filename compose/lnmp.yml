@@ -18,7 +18,7 @@ services:
       - "/starlab/docker/nginx/www:/usr/share/nginx/html/:ro"
     restart: always
     external_links:
-      - php1:php-fpm_service
+      - php-fpm_service1:php-fpm_service
 
 
   php:
