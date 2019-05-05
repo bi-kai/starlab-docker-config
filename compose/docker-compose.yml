@@ -23,7 +23,7 @@ services:
       # - php-fpm_service1:php-fpm_service
 
   redis:
-    image: redis:alpine
+    image: redis
     container_name: redis_service
     ports:
       - "6379"
@@ -39,18 +39,20 @@ services:
     restart: always
   
   mysql:
-     container_name: mysql_service
-     build:
-        context: ~/docker/mysql
-        dockerfile: dockerfile
-     ports:
-        - "3306:3306"
-     volumes:
-        - ~/docker/mysql/data:/var/lib/mysql
-     #初始密码
-     environment:
-        - MYSQL_ROOT_PASSWORD=123456
-     restart: always 
+    image: mysql
+    container_name: mysql_service
+    ports:
+      - "3306:3306"
+    volumes:
+      - /starlab/docker/mysql/data:/var/lib/mysql
+    environment:
+      - TZ=Asia/Shanghai # time zome
+      - MYSQL_ROOT_PASSWORD=123456 #root pwd
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb_use_native_aio=0  # utf8
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.4
+    restart: always 
 
   # mongodb:
 
@@ -66,6 +68,7 @@ services:
 
   php:
     image: php:fpm
+    # image: bikai/php:fpm #with PDO
     #image: 'bitnami/php-fpm:7.2'
     tty: true # Enables debugging capabilities when attached to this container.
     container_name: php-fpm_service
