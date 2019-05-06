@@ -1,6 +1,6 @@
 <?php
     try{
-        $conn = new PDO("mysql:host=mysql:3306;dbname=test", "root", "zxcvbnm");
+        $conn = new PDO("mysql:host=mysql:3306;dbname=starlab", "starlab_user", "starlab");
         echo "连接成功\n";
         $stmt = $conn->prepare("SELECT * FROM name");
         $stmt->execute();
