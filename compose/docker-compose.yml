@@ -51,7 +51,7 @@ services:
       - MYSQL_DATABASE=starlab
       - MYSQL_USER=starlab_user
       - MYSQL_PASSWORD=starlab
-    # command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb_use_native_aio=0  # utf8
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb_use_native_aio=0  # utf8
     networks:
       starlab-net:
         ipv4_address: 192.148.0.4
@@ -60,15 +60,17 @@ services:
   mongodb:
     image: mongo
     container_name: mongo_service
+    tty: true
     ports:
-      - "27017:27017"
+      - "37017:27017"
     volumes:
       - /starlab/docker/mongodb/data:/data/db
       - /starlab/docker/mongodb/backup:/data/backup
       - /starlab/docker/mongodb/configdb:/data/configdb
       - /starlab/docker/mongodb/logs:/data/logs
     # command: mongo --config /etc/mongo/mongod.conf
-    command: mongo --auth --logpath /data/logs/mongo.log --logappend
+    # need to touch & chmod log file in advance.
+    command: mongod --auth --logpath /data/logs/mongo.log --logappend
     networks:
       starlab-net:
         ipv4_address: 192.148.0.5
