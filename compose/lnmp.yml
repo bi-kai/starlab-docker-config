@@ -1,39 +1,126 @@
-version: '3'
+version: "3"
 services:
   nginx:
     image: nginx
     container_name: nginx_service
-    depends_on:
-      - php
     ports:
       - "80:80"
-    networks:
-      - "starlab-net1"
-    # links:
-      # - php:php-fpm_service
+      - "433:433"
+    depends_on:
+      - php
     volumes:
       - "/starlab/docker/nginx/logs:/var/log/nginx"
       - "/starlab/docker/nginx/conf/nginx.conf:/etc/nginx/nginx.conf"
       - "/starlab/docker/nginx/conf/vhosts:/etc/nginx/conf.d"
       - "/starlab/docker/nginx/www:/usr/share/nginx/html/:ro"
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.2
     restart: always
-    external_links:
-      - php-fpm_service1:php-fpm_service
+    # links:
+      # - php:php-fpm_service
+    # external_links:
+      # - php-fpm_service1:php-fpm_service
 
+  redis:
+    image: redis
+    container_name: redis_service
+    ports:
+      - "63791:6379"
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.3
+    volumes:
+      # - "/starlab/docker/redis/conf:/usr/local/etc/redis"
+      - "/starlab/docker/redis/data:/data"
+    # command: redis-server /usr/local/etc/redis/redis.conf
+    command: redis-server --appendonly yes --logfile /data/redis.log -- databases 160 --requirepass starlab
+    restart: always
+  
+  mysql:
+    image: mysql
+    container_name: mysql_service
+    ports:
+      - "3306:3306"
+    volumes:
+      - /starlab/docker/mysql/conf:/etc/mysql/conf.d
+      - /starlab/docker/mysql/data:/var/lib/mysql
+    environment:
+      - TZ=Asia/Shanghai # time zome
+      - MYSQL_ROOT_PASSWORD=starlab #root pwd
+      - MYSQL_DATABASE=starlab
+      - MYSQL_USER=starlab_user
+      - MYSQL_PASSWORD=starlab
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb_use_native_aio=0  # utf8
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.4
+    restart: always
+
+  mongodb:
+    image: mongo
+    container_name: mongo_service
+    tty: true
+    ports:
+      - "37017:27017"
+    volumes:
+      - /starlab/docker/mongodb/data:/data/db
+      - /starlab/docker/mongodb/backup:/data/backup
+      - /starlab/docker/mongodb/configdb:/data/configdb
+      - /starlab/docker/mongodb/logs:/data/logs
+    # command: mongo --config /etc/mongo/mongod.conf
+    # need to touch & chmod log file in advance.
+    command: mongod --auth --logpath /data/logs/mongo.log --logappend
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.5
+    restart: always
+
+  # postgres:
+  #   image: postgres
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+  #   networks:
+  #     - backend
+  #   deploy:
+  #     placement:
+  #       constraints: [node.role == manager]
 
   php:
     image: php:fpm
+    # image: bikai/php:fpm #with PDO
+    #image: 'bitnami/php-fpm:7.2'
+    tty: true # Enables debugging capabilities when attached to this container.
     container_name: php-fpm_service
-    expose:
-      - "9000"
-    networks:
-      - "starlab-net1"
-    # ip 192.148.0.3
+    ports:
+      - 9000:9000
     volumes:
-      - "/starlab/docker/php:/app"
-    restart: always
+      - /starlab/docker/php:/app
+      # - /starlab/docker/php/php.ini:/usr/local/php7/lib/php.ini:ro
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.6
+    restart : always
+
+  # wordpress
+  # wordpress:
+  #   depends_on:
+  #     - mysql
+  #   image: wordpress
+  #   ports:
+  #     - "8000:80"
+  #   restart: always
+  #   environment:
+  #     WORDPRESS_DB_HOST: db:3306
+  #     WORDPRESS_DB_USER: starlab_user
+  #     WORDPRESS_DB_PASSWORD: starlab
 
 networks:
-  starlab-net1:
+  starlab-net:
     driver: bridge
-    
+    ipam:
+      config:
+        - subnet: 192.148.0.0/16
+
+volumes:
+  db-data:
