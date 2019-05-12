@@ -3,14 +3,14 @@ services:
   nginx:
     image: nginx
     container_name: nginx_service
-    depends_on:
-      - php
+    #depends_on:
+      #- php
     ports:
       - "80:80"
     networks:
       - "starlab-net1"
-    # links:
-      # - php:php-fpm_service
+    #links:
+      #- php:php-fpm_service
     volumes:
       - "/starlab/docker/nginx/logs:/var/log/nginx"
       - "/starlab/docker/nginx/conf/nginx.conf:/etc/nginx/nginx.conf"
@@ -23,7 +23,7 @@ services:
 
   php:
     image: php:fpm
-    container_name: php-fpm_service
+    container_name: php-fpm_service1
     expose:
       - "9000"
     networks:

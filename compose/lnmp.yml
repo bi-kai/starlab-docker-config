@@ -6,8 +6,8 @@ services:
     ports:
       - "80:80"
       - "433:433"
-    depends_on:
-      - php
+    #depends_on: # service name will be inflected to ip aotomatically in one compose file.
+      #- php # no need to set dependencies.
     volumes:
       - "/starlab/docker/nginx/logs:/var/log/nginx"
       - "/starlab/docker/nginx/conf/nginx.conf:/etc/nginx/nginx.conf"
@@ -36,7 +36,7 @@ services:
     # command: redis-server /usr/local/etc/redis/redis.conf
     command: redis-server --appendonly yes --logfile /data/redis.log -- databases 160 --requirepass starlab
     restart: always
-  
+
   mysql:
     image: mysql
     container_name: mysql_service
@@ -124,3 +124,5 @@ networks:
 
 volumes:
   db-data:
+
+

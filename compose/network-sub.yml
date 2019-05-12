@@ -2,7 +2,7 @@ version: '3'
 services:
   php1:
     image: php:fpm
-    container_name: php-fpm_service1
+    container_name: php-fpm_service
     expose:
       - "9000"
     networks:
