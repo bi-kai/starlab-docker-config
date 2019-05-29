@@ -10,4 +10,13 @@ Docker images designed for StarLab, building images from manually to automatical
 ### nginx
 nginx定制化镜像，详细使用说明见其readme。
 
+### redis
+
+
+### php
+
+
+### nodejs
+
+
 -EOF-
