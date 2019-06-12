@@ -1,0 +1,133 @@
+#Directory Structure
+##git repo: ${repo_path}=/starlab/docker-disk-share/git_repos/starlab-docker-config
+##redis data: ${data_path}=/starlab/docker-disk-share/data
+
+
+version: "3"
+services:
+  nginx:
+    image: nginx
+    container_name: nginx_service
+    ports:
+      - "80:80"
+      - "433:433"
+    #depends_on: # service name will be inflected to ip aotomatically in one compose file.
+      #- php # no need to set dependencies.
+    volumes:
+      - "${repo_path}/nginx/logs:/var/log/nginx"
+      - "${repo_path}/nginx/conf/nginx.conf:/etc/nginx/nginx.conf"
+      - "${repo_path}/nginx/conf/vhosts:/etc/nginx/conf.d"
+      - "${repo_path}/nginx/www:/usr/share/nginx/html/:ro"
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.2
+    restart: always
+    # links:
+      # - php:php-fpm_service
+    # external_links:
+      # - php-fpm_service1:php-fpm_service
+
+  redis:
+    image: redis
+    container_name: redis_service
+    ports:
+      - "63791:6379"
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.3
+    volumes:
+      # - "${data_path}/redis/conf:/usr/local/etc/redis"
+      - "${data_path}/redis/data:/data"
+    # command: redis-server /usr/local/etc/redis/redis.conf
+    command: redis-server --appendonly yes --logfile /data/redis.log -- databases 160 --requirepass starlab
+    restart: always
+
+  mysql:
+    image: mysql
+    container_name: mysql_service
+    ports:
+      - "3306:3306"
+    volumes:
+      - ${data_path}/mysql/conf:/etc/mysql/conf.d
+      - ${data_path}/mysql/data:/var/lib/mysql
+    environment:
+      - TZ=Asia/Shanghai # time zome
+      - MYSQL_ROOT_PASSWORD=starlab #root pwd
+      - MYSQL_DATABASE=starlab
+      - MYSQL_USER=starlab_user
+      - MYSQL_PASSWORD=starlab
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb_use_native_aio=0  # utf8
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.4
+    restart: always
+
+  # step 1: touch & chmod mongo.log file.
+  # step 2: init db & user manually.
+  mongodb:
+    image: mongo
+    container_name: mongo_service
+    tty: true
+    environment:
+      # 在这里输入 MongoDB 的 root 用户与密码，如果使用了此项，则不需要 --auth 参数
+      - MONGO_INITDB_ROOT_USERNAME=admin #数据库用户名
+      - MONGO_INITDB_ROOT_PASSWORD=starlab #数据库密码
+    ports:
+      - "37017:27017"
+    volumes:
+      - ${data_path}/mongodb/data:/data/db
+      - ${data_path}/mongodb/backup:/data/backup
+      - ${data_path}/mongodb/configdb:/data/configdb
+      - ${data_path}/mongodb/logs:/data/logs
+    # command: mongo --config /etc/mongo/mongod.conf
+    command: mongod --auth --logpath /data/logs/mongo.log --logappend
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.5
+    restart: always
+
+  # postgres:
+  #   image: postgres
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+  #   networks:
+  #     - backend
+  #   deploy:
+  #     placement:
+  #       constraints: [node.role == manager]
+
+  php:
+    image: php:fpm
+    #image: bikai/php:fpm #with PDO
+    #image: 'bitnami/php-fpm:7.2'
+    tty: true # Enables debugging capabilities when attached to this container.
+    container_name: php-fpm_service
+    ports:
+      - 9000:9000
+    volumes:
+      - ${repo_path}/php:/app
+      # - ${data_path}/php/php.ini:/usr/local/php7/lib/php.ini:ro
+    networks:
+      starlab-net:
+        ipv4_address: 192.148.0.6
+    restart : always
+
+  # wordpress
+  # wordpress:
+  #   depends_on:
+  #     - mysql
+  #   image: wordpress
+  #   ports:
+  #     - "8000:80"
+  #   restart: always
+  #   environment:
+  #     WORDPRESS_DB_HOST: db:3306
+  #     WORDPRESS_DB_USER: starlab_user
+  #     WORDPRESS_DB_PASSWORD: starlab
+
+networks:
+  starlab-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.148.0.0/16
